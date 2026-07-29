@@ -1,0 +1,37 @@
+{
+  "name": "lesson25",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:api": "playwright test test/api",
+    "test:e2e": "playwright test test/e2e",
+    "test:e2e:headed": "playwright test test/e2e --headed",
+    "test:integration": "playwright test test/integration",
+    "test:chromium": "playwright test --project=chromium",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.61.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@stylistic/eslint-plugin-ts": "^4.4.1",
+    "@types/node": "^26.1.2",
+    "dotenv": "^16.4.5",
+    "eslint": "^10.6.0",
+    "eslint-plugin-prettier": "^5.5.6",
+    "eslint-plugin-unicorn": "^71.1.0",
+    "globals": "^17.7.0",
+    "prettier": "^3.9.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.63.0"
+  }
+}
