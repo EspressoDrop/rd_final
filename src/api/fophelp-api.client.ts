@@ -22,7 +22,7 @@ export class FophelpApiClient {
         const body = {
             ID: income.ID || `ID-${Math.floor(Math.random() * 100000)}`,
             Date: income.Date || new Date().toISOString().split('T')[0],
-            Income: typeof incomeValue === 'string' ? parseFloat(incomeValue) : incomeValue,
+            Income: typeof incomeValue === 'string' ? incomeValue : incomeValue.toString(),
             Currency: income.Currency || 'UAH',
             Comment: income.Comment || `autotest-${Date.now()}`,
             Cash: income.Cash ?? true
