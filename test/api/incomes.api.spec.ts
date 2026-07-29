@@ -14,10 +14,16 @@ test.describe('Incomes API', () => {
         const [result, response] = await authenticatedApi.addIncome({
             Income: 50000,
             Currency: 'UAH',
-            Comment: 'Test income'
+            Comment: `CI Test income - ${Date.now()}`
         });
 
-        expect(response.ok()).toBeTruthy();
+        // Log response details for debugging
+        if (!response.ok()) {
+            console.log('Response status:', response.status());
+            console.log('Response body:', result);
+        }
+
+        expect(response.ok(), `Expected response to be ok, but got status ${response.status()}: ${result}`).toBeTruthy();
         expect(response.status()).toBeLessThan(300);
     });
 
