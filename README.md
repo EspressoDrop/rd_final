@@ -264,16 +264,6 @@ npm run test:chromium
   - API endpoints
   - Test credentials
 
-## 📈 Recent Improvements
-
-- ✅ Removed unused files and page objects (LoginPage, DashboardPage, ExpensePage)
-- ✅ Implemented DRY principle with helper methods (`findIncomeByComment`, `findIncomeById`)
-- ✅ Added negative test cases for better API validation coverage
-- ✅ Fixed nested `use` configuration in `playwright.config.ts`
-- ✅ Cleaned up test fixtures (removed unused `apiService` and `fophelpApi`)
-- ✅ Improved test assertions with better error messages
-- ✅ Removed empty test files and integration test directory
-
 ## 🐛 Known Issues
 
 - ⚠️ **API Bug Discovered**: The FopHelp API accepts negative income amounts (e.g., `-5000`) without validation. This is a backend issue that should be fixed to reject invalid amounts. A test case has been added to verify this behavior, but it currently expects the API to accept negative values until the backend implements proper validation.
