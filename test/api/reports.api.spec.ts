@@ -6,5 +6,7 @@ test.describe('Reports API', () => {
 
         expect(response.ok()).toBeTruthy();
         expect(response.status()).toBe(200);
+        expect(reports).not.toBeNull();
+        expect(typeof reports).toBe('object');
     });
 });

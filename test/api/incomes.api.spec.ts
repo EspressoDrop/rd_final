@@ -1,3 +1,4 @@
+import { IncomeRecordDto } from '../../src/dto/income.dto';
 import { test, expect } from '../fixtures/test.fixtures';
 
 test.describe('Incomes API', () => {
@@ -17,18 +18,11 @@ test.describe('Incomes API', () => {
             Comment: `CI Test income - ${Date.now()}`
         });
 
-        // Log response details for debugging
-        if (!response.ok()) {
-            console.log('Response status:', response.status());
-            console.log('Response body:', result);
-        }
-
         expect(response.ok(), `Expected response to be ok, but got status ${response.status()}: ${result}`).toBeTruthy();
         expect(response.status()).toBeLessThan(300);
     });
 
     test('should add and then delete an income', async ({ authenticatedApi }) => {
-        // First, add an income with today's date
         const testComment = `DELETE-TEST-${Date.now()}`;
         const [addResult, addResponse] = await authenticatedApi.addIncome({
             Income: 25000,
@@ -38,21 +32,12 @@ test.describe('Incomes API', () => {
 
         expect(addResponse.ok(), `Failed to add income: ${addResponse.status()} - ${addResult}`).toBeTruthy();
 
-        // Get all incomes to find the one we just added
         const [incomes] = await authenticatedApi.getIncomes();
 
-        // IncomeByMonthDto is Record<string, IncomeRecordDto[]>, so we need to search through all months
-        let addedIncome;
-        if (incomes) {
-            for (const month in incomes) {
-                addedIncome = incomes[month].find(inc => inc.Comment === testComment);
-                if (addedIncome) break;
-            }
-        }
+        const addedIncome = authenticatedApi.findIncomeByComment(incomes, testComment);
 
         expect(addedIncome, 'Added income not found in the list').toBeDefined();
 
-        // Now delete it
         if (addedIncome) {
             const [, deleteResponse] = await authenticatedApi.deleteIncome(addedIncome);
             expect(deleteResponse.ok(), `Failed to delete income: ${deleteResponse.status()}`).toBeTruthy();
@@ -60,7 +45,6 @@ test.describe('Incomes API', () => {
     });
 
     test('should update an existing income', async ({ authenticatedApi }) => {
-        // First, add an income with unique comment
         const testComment = `UPDATE-TEST-${Date.now()}`;
         const [, addResponse] = await authenticatedApi.addIncome({
             Income: 30000,
@@ -70,22 +54,13 @@ test.describe('Incomes API', () => {
 
         expect(addResponse.ok()).toBeTruthy();
 
-        // Get all incomes to find the one we just added
         const [incomes] = await authenticatedApi.getIncomes();
 
-        // Search through all months to find the added income
-        let addedIncome;
-        if (incomes) {
-            for (const month in incomes) {
-                addedIncome = incomes[month].find(inc => inc.Comment === testComment);
-                if (addedIncome) break;
-            }
-        }
+        const addedIncome = authenticatedApi.findIncomeByComment(incomes, testComment);
 
         expect(addedIncome, 'Added income not found').toBeDefined();
 
         if (addedIncome) {
-            // Update the income
             const updatedIncome = {
                 ...addedIncome,
                 Income: '35000',
@@ -95,19 +70,34 @@ test.describe('Incomes API', () => {
             const [, updateResponse] = await authenticatedApi.updateIncome(updatedIncome);
             expect(updateResponse.ok(), `Failed to update income: ${updateResponse.status()}`).toBeTruthy();
 
-            // Verify the update
             const [updatedIncomes] = await authenticatedApi.getIncomes();
 
-            // Search for the updated income
-            let verifyIncome;
-            if (updatedIncomes) {
-                for (const month in updatedIncomes) {
-                    verifyIncome = updatedIncomes[month].find(inc => inc.ID === addedIncome.ID);
-                    if (verifyIncome) break;
-                }
-            }
-
+            const verifyIncome = authenticatedApi.findIncomeById(updatedIncomes, addedIncome.ID);
+            expect(verifyIncome).toBeDefined();
             expect(verifyIncome?.Comment).toBe('Updated comment');
+            expect(verifyIncome?.Income).toBe(35000);
         }
+    });
+
+    test('should reject invalid income amount', async ({ authenticatedApi }) => {
+        const [, response] = await authenticatedApi.addIncome({
+            Income: -5000,
+            Currency: 'UAH',
+            Comment: 'Invalid'
+        });
+        expect(response.ok()).toBe(false);
+    });
+
+    test('should handle non-existent income deletion', async ({ authenticatedApi }) => {
+        const fakeIncome: IncomeRecordDto = {
+            ID: 'nonexistent-id',
+            Date: new Date().toISOString(),
+            Income: 0,
+            Currency: 'UAH',
+            Comment: 'fake',
+            Cash: false
+        };
+        const [, response] = await authenticatedApi.deleteIncome(fakeIncome);
+        expect(response.ok()).toBe(false);
     });
 });

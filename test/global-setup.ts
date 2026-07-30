@@ -7,23 +7,19 @@ async function globalSetup(): Promise<void> {
     const browser = await chromium.launch();
     const page = await browser.newPage();
 
-    await page.goto('https://new.fophelp.pro');
+    await page.goto(envConfig.baseURL);
 
-    // Click login button
     await page.locator('button[class="nav-button signin-button"]').click();
-    await page.waitForTimeout(500);
+    await page.locator('input[id="login-email"]').waitFor({ state: 'visible' });
 
-    // Fill and submit login form
     await page.locator('input[id="login-email"]').fill(envConfig.testUser.username);
     await page.locator('input[id="login-password"]').fill(envConfig.testUser.password);
     await page.locator('button[type="submit"]').click();
 
-    // Wait for login to complete
     await page.locator('span[class="welcome-text"]').waitFor({ timeout: 10000 });
 
     console.log('✅ Login successful!');
 
-    // Save the authenticated state (cookies, localStorage, etc.)
     await page.context().storageState({ path: 'test/.auth/user.json' });
     console.log('✅ Saved authentication state to test/.auth/user.json');
 

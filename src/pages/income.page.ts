@@ -16,7 +16,7 @@ export class IncomePage extends BasePage {
     }
 
     public async navigate(): Promise<void> {
-        await this.page.goto('https://new.fophelp.pro/incomes');
+        await this.page.goto('/incomes');
         await this.waitForPageLoad();
     }
 
@@ -49,20 +49,6 @@ export class IncomePage extends BasePage {
     public async saveIncome(): Promise<void> {
         await this.click(this.saveButton);
         await this.waitForPageLoad();
-    }
-
-    public async addNewIncome(data: {
-        amount: string;
-        currency?: string;
-        comment?: string;
-    }): Promise<void> {
-        await this.clickAddIncome();
-        await this.fillIncomeForm(data);
-        await this.saveIncome();
-    }
-
-    public async getIncomesCount(): Promise<number> {
-        return await this.incomesList.count();
     }
 
     public async isIncomePageLoaded(): Promise<boolean> {

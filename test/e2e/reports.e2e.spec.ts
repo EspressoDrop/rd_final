@@ -1,23 +1,14 @@
 import { test, expect } from '../fixtures/test.fixtures';
 
 test.describe('Reports E2E', () => {
-    // All tests use authenticated state from global-setup.ts
-
-    test('should display all reports page', async ({ page }) => {
-        await page.goto('/reports/all');
-
-        // Verify we're on the correct page by checking URL
+    test('should display all reports page', async ({ reportsPage, page }) => {
+        await reportsPage.navigate();
         await expect(page).toHaveURL(/.*reports\/all.*/);
-
-        // Verify the reports nav link is active
-        const reportsNavLink = page.locator('(//div[@class="nav-menu"]//button)[last()]');
-        await expect(reportsNavLink).toHaveClass(/nav-link active/);
+        expect(await reportsPage.isReportsPageLoaded()).toBeTruthy();  // ✅ Better
     });
 
-    test('should show reports navigation is active', async ({ page }) => {
-        await page.goto('/reports/all');
-
-        // Check that the last button in nav-menu has the active class
+    test('should show reports navigation is active', async ({ reportsPage, page }) => {
+        await reportsPage.navigate();
         const activeNavLink = page.locator('(//div[@class="nav-menu"]//button)[last()]');
         await expect(activeNavLink).toBeVisible();
         await expect(activeNavLink).toHaveClass(/active/);

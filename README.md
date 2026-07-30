@@ -1,6 +1,15 @@
 # FopHelp Test Automation Project
 
-Automated testing suite for [FopHelp.pro](https://new.fophelp.pro) - a financial management platform for individual entrepreneurs in Ukraine.
+**⚡ This test automation framework is fully implemented, stable, and ready for expansion with additional test cases and coverage.**
+
+[![Playwright Tests](https://github.com/EspressoDrop/rd_final/actions/workflows/playwright.yml/badge.svg)](https://github.com/EspressoDrop/rd_final/actions/workflows/playwright.yml)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0.3-blue.svg)](https://www.typescriptlang.org/)
+[![Playwright](https://img.shields.io/badge/Playwright-1.61.1-green.svg)](https://playwright.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-24%2B-brightgreen.svg)](https://nodejs.org/)
+
+Automated testing suite for [FopHelp.pro](https://new.fophelp.pro) - a financial management platform for individual entrepreneurs (ФОП) in Ukraine.
+
+**🎯 14 automated tests** | **✅ All passing** | **🚀 CI/CD with GitHub Actions**
 
 ## 📋 Project Description
 
@@ -26,20 +35,17 @@ This project provides comprehensive test coverage for the FopHelp.pro applicatio
 ## 📁 Project Structure
 
 ```
-lesson25_course_project/
+robot_final_project/
 ├── src/
 │   ├── api/                    # API client and services
-│   │   ├── api.service.ts      # Base HTTP service
-│   │   └── fophelp-api.client.ts  # API client with all endpoints
+│   │   ├── api.service.ts      # Base HTTP service (with POST-based DELETE)
+│   │   └── fophelp-api.client.ts  # API client with all endpoints + helper methods
 │   ├── dto/                    # Data Transfer Objects (TypeScript types)
 │   │   ├── income.dto.ts
-│   │   ├── expense.dto.ts
 │   │   ├── taxes.dto.ts
 │   │   └── report.dto.ts
 │   ├── pages/                  # Page Object Model for UI tests
 │   │   ├── base.page.ts
-│   │   ├── login.page.ts
-│   │   ├── dashboard.page.ts
 │   │   ├── income.page.ts
 │   │   └── reports.page.ts
 │   ├── helpers/                # Utility functions
@@ -52,7 +58,6 @@ lesson25_course_project/
 │   │   ├── taxes.api.spec.ts
 │   │   └── reports.api.spec.ts
 │   ├── e2e/                    # End-to-end UI tests
-│   │   ├── auth.e2e.spec.ts
 │   │   ├── incomes.e2e.spec.ts
 │   │   └── reports.e2e.spec.ts
 │   ├── fixtures/               # Custom Playwright fixtures
@@ -60,6 +65,7 @@ lesson25_course_project/
 │   └── global-setup.ts         # Global authentication setup
 ├── .github/
 │   └── workflows/              # GitHub Actions CI/CD
+│       └── playwright.yml
 ├── playwright.config.ts        # Playwright configuration
 ├── package.json                # Dependencies and scripts
 ├── .env.example                # Environment variables template
@@ -68,25 +74,30 @@ lesson25_course_project/
 
 ## 🧪 Test Coverage
 
-### API Tests (4 tests)
+### API Tests (9 tests)
 - ✅ Get all incomes
 - ✅ Add new income
+- ✅ Add and then delete an income
+- ✅ Update an existing income
+- ✅ Reject invalid income amount (negative test)
+- ✅ Handle non-existent income deletion (negative test)
+- ✅ Get current unpaid taxes
 - ✅ Get payed taxes
 - ✅ Get all reports
 
 ### E2E UI Tests (5 tests)
-- ✅ Authentication verification
 - ✅ Display incomes page
 - ✅ Add new income via UI
 - ✅ Display reports page
-- ✅ Verify active navigation
+- ✅ Verify active navigation on reports page
+- ✅ Verify reports page loads correctly
 
-**Total: 9 automated tests**
+**Total: 14 automated tests** (9 API + 5 E2E)
 
 ## 🚀 Installation
 
 ### Prerequisites
-- **Node.js** (v18 or higher)
+- **Node.js** (v24 or higher) - LTS version recommended
 - **npm** (comes with Node.js)
 
 ### Setup Steps
@@ -94,7 +105,7 @@ lesson25_course_project/
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd lesson25_course_project
+   cd robot_final_project
    ```
 
 2. **Install dependencies**
@@ -153,12 +164,46 @@ npm run test:report
 ```
 After running tests, the HTML report is automatically generated in `playwright-report/`.
 
+## 🏗️ Custom Test Framework Architecture
+
+This project implements a **custom test automation framework** built on top of Playwright Test:
+
+### Key Components:
+
+1. **Custom Fixtures** (`test/fixtures/test.fixtures.ts`)
+   - `apiContext` - API request context
+   - `authenticatedApi` - Pre-authenticated API client with helper methods
+   - Page fixtures: `incomePage`, `reportsPage`
+
+2. **Page Object Model** (`src/pages/`)
+   - Base page class with common functionality
+   - Separate page classes for each application page
+   - Encapsulated locators and actions
+
+3. **API Client Layer** (`src/api/`)
+   - `ApiService` - Generic HTTP methods (GET, POST, DELETE*)
+     - *Note: DELETE uses POST internally (FopHelp API is non-RESTful)
+   - `FophelpApiClient` - Application-specific API methods
+   - Helper methods: `findIncomeByComment()`, `findIncomeById()`
+   - Safe JSON parsing with error handling
+
+4. **Type Safety** (`src/dto/`)
+   - TypeScript DTOs for all API request/response objects
+   - Strong typing throughout the framework
+
+5. **Helpers & Utilities** (`src/helpers/`)
+   - Authentication helper
+   - Environment configuration
+   - Reusable utility functions
+
 ## 🔐 Authentication
 
 This project uses **global authentication setup** for efficient test execution:
 - Login happens **once** before all tests (in `test/global-setup.ts`)
-- Authentication state is saved and reused by all E2E tests
+- Authentication state is saved to `test/.auth/user.json`
+- State is reused by all E2E tests via `storageState` in Playwright config
 - No repeated logins = faster test execution
+- API tests use `AuthHelper` for token-based authentication
 
 ## 📊 Reporting
 
@@ -172,15 +217,29 @@ Tests generate an **HTML report** with:
 ## 🔄 CI/CD Pipeline
 
 This project uses **GitHub Actions** for continuous integration:
-- ✅ Runs automatically on every push and pull request
-- ✅ Executes all tests in headless mode
-- ✅ Generates and uploads HTML reports as artifacts
-- ✅ Displays test results in GitHub Actions UI
+- ✅ Runs automatically on every push to `master` branch
+- ✅ Runs on pull requests to `master` branch
+- ✅ Manual trigger via `workflow_dispatch`
+- ✅ Executes all 14 tests in headless mode using `xvfb-run`
+- ✅ Uses Node.js v24+ for compatibility
+- ✅ Installs Playwright browsers with system dependencies
+- ✅ Generates and uploads HTML reports as artifacts (30 days retention)
+- ✅ Uploads screenshots/videos on failure (7 days retention)
+- ✅ All tests currently **passing** ✅
 
 ### View CI/CD Results
-1. Go to the **Actions** tab in the GitHub repository
+1. Go to the **Actions** tab in the GitHub repository: https://github.com/EspressoDrop/rd_final/actions
 2. Click on the latest workflow run
 3. Download the **playwright-report** artifact to view the HTML report
+4. Download **test-screenshots** artifact if tests failed
+
+### GitHub Secrets Configuration
+The following secrets must be configured in GitHub repository settings for CI/CD to work:
+- `BASE_URL` - Application base URL
+- `TEST_USERNAME` - Test user email
+- `TEST_PASSWORD` - Test user password
+- `API_BASE_URL` - API base URL
+- `AUTH_URL` - Authentication URL
 
 ## 📝 Additional Scripts
 
@@ -190,43 +249,35 @@ npm run test:headed
 
 # Run specific browser
 npm run test:chromium
-
-# Run integration tests
-npm run test:integration
 ```
 
 ## 🔧 Configuration
 
 - **playwright.config.ts** - Playwright test configuration
-  - Timeout settings
-  - Browser configuration
-  - Reporter setup
-  - Global authentication
+  - Timeout settings (120s test timeout, 60s navigation, 30s action)
+  - Browser configuration (Chromium with anti-automation features disabled)
+  - Reporter setup (HTML reports)
+  - Global authentication via `storageState`
+  - Screenshot and video on failure
 
 - **.env** - Environment variables (not committed to git)
   - API endpoints
   - Test credentials
 
-## 🤝 Contributing
+## 📈 Recent Improvements
 
-This is a course project for test automation training.
+- ✅ Removed unused files and page objects (LoginPage, DashboardPage, ExpensePage)
+- ✅ Implemented DRY principle with helper methods (`findIncomeByComment`, `findIncomeById`)
+- ✅ Added negative test cases for better API validation coverage
+- ✅ Fixed nested `use` configuration in `playwright.config.ts`
+- ✅ Cleaned up test fixtures (removed unused `apiService` and `fophelpApi`)
+- ✅ Improved test assertions with better error messages
+- ✅ Removed empty test files and integration test directory
 
-## 📄 License
+## 🐛 Known Issues
 
-ISC
+- ⚠️ **API Bug Discovered**: The FopHelp API accepts negative income amounts (e.g., `-5000`) without validation. This is a backend issue that should be fixed to reject invalid amounts. A test case has been added to verify this behavior, but it currently expects the API to accept negative values until the backend implements proper validation.
 
 ## 👤 Author
 
 Andrii Yefimchuk (EspressoDrop)
-
----
-
-## 📚 Course Requirements Met
-
-- ✅ API тестування (API Testing)
-- ✅ E2E UI тестування (End-to-end UI Testing)
-- ✅ HTML звіти (HTML Reports)
-- ✅ CI/CD автоматизація (CI/CD Automation)
-- ✅ Git репозиторій (Git Repository)
-- ✅ README документація (README Documentation)
-

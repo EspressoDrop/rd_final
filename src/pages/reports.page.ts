@@ -11,20 +11,8 @@ export class ReportsPage extends BasePage {
     }
 
     public async navigate(): Promise<void> {
-        await this.page.goto('https://new.fophelp.pro/reports/all');
+        await this.page.goto('/reports/all');
         await this.waitForPageLoad();
-    }
-
-    public async getPageTitle(): Promise<string> {
-        return await this.getText(this.pageTitle);
-    }
-
-    public async isReportsTableVisible(): Promise<boolean> {
-        return await this.isVisible(this.reportsTable);
-    }
-
-    public async getReportsCount(): Promise<number> {
-        return await this.reportRows.count();
     }
 
     public async isReportsPageLoaded(): Promise<boolean> {
